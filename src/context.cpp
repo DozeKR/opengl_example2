@@ -10,10 +10,10 @@ ContextUPtr Context::Create() {
 bool Context::Init() {
 
     float vertices[] = {
-        0.5f, 0.5f, 0.0f,       // top right
-        0.5f, -0.5f, 0.0f,      // bottom right
-        -0.5f, -0.5f, 0.0f,     // bottom left
-        -0.5f, 0.5f, 0.0f,      // top left
+        0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f,     // top right, green
+        0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f,    // bottom right, white
+        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,   // bottom left, green
+        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f,    // top left, white
     };
         uint32_t indices[] = {  // note that we start from 0! 점의 인덱스 표현
         0, 1, 3,                // first triangle
@@ -23,15 +23,17 @@ bool Context::Init() {
     m_vertexLayout = VertexLayout::Create();                                       //array obj -> 버퍼 obj 순서중요
 
     m_vertexBuffer = Buffer::CreateWithData(GL_ARRAY_BUFFER,
-        GL_STATIC_DRAW, vertices, sizeof(float) * 12);                             //용도는 "STATIC | DYNAMIC | STREAM", "DRAW | COPY | READ"의 조합
+        GL_STATIC_DRAW, vertices, sizeof(float) * 24);                             //용도는 "STATIC | DYNAMIC | STREAM", "DRAW | COPY | READ"의 조합
   	
-    m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);     //점의 위치 묘사 n | size | type | normailzed | stride | offset
+    //m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);   //점의 위치 묘사 n | size | type | normailzed | stride | offset
+    m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
+    m_vertexLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, sizeof(float) * 3);
 
     m_indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER,
         GL_STATIC_DRAW, indices, sizeof(uint32_t) * 6);
    
-    ShaderPtr vertShader = Shader::CreateFromFile("./shader/simple.vs", GL_VERTEX_SHADER);
-    ShaderPtr fragShader = Shader::CreateFromFile("./shader/simple.fs", GL_FRAGMENT_SHADER);
+    ShaderPtr vertShader = Shader::CreateFromFile("./shader/per_vertex_color.vs", GL_VERTEX_SHADER);
+    ShaderPtr fragShader = Shader::CreateFromFile("./shader/per_vertex_color.fs", GL_FRAGMENT_SHADER);
     if (!vertShader || !fragShader)
         return false;
     SPDLOG_INFO("vertex shader id: {}", vertShader->Get());
@@ -51,5 +53,8 @@ void Context::Render() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     m_program->Use();
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);        //primitive | 인덱스의 개수 | 데이터타입 |pointer/offset
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    //m_program->Use();
+    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);        //primitive | 인덱스의 개수 | 데이터타입 |pointer/offset
 } 
